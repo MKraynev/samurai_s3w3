@@ -1,10 +1,11 @@
 import { AvailableLikeStatus } from "./LikeRequest"
 
+export type ExtendedLikeStatistic = LikeStatistic & { newestLikes: NewestLike[] }
+
 export type LikeStatistic = {
     likesCount: number,
     dislikesCount: number,
-    myStatus: AvailableLikeStatus,
-    newestLikes: NewestLike[]
+    myStatus: AvailableLikeStatus
 }
 
 export type NewestLike = {

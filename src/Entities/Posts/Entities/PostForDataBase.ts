@@ -1,8 +1,13 @@
-import { LikeStatistic } from "../../Likes/Entities/LikeStatistic";
+import { ExtendedLikeStatistic } from "../../Likes/Entities/LikeStatistic";
 import { PostRequest } from "./PostForRequest";
 
 export class PostDataBase extends PostRequest {
-    
+    public extendedLikesInfo: ExtendedLikeStatistic = {
+        likesCount: 0,
+        dislikesCount: 0,
+        myStatus: "Like",
+        newestLikes: []
+    };
 
     constructor(
         post: PostRequest,

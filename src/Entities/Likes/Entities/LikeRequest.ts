@@ -1,6 +1,6 @@
 import { AvailableDbTables } from "../../../Common/Database/DataBase";
 
-export type AvailableLikeTarget = "comments";
+export type AvailableLikeTarget = "comments" | "posts";
 export type AvailableLikeStatus = "Like" | "Dislike" | "None";
 export const AvailableLikeStatusList = ["Like", "Dislike", "None"];
 export enum LikeStatus{

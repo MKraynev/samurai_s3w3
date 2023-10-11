@@ -44,19 +44,33 @@ class PostService {
         let pagedObjects = paginator.GetPaged<PostResponse[]>(foundObjectsOperation.executionResultObject);
         let operationResult = new ExecutionResultContainer(ServiseExecutionStatus.Success, pagedObjects)
 
+
+
         return operationResult;
     }
-    public async GetPostById(id: string): Promise<ExecutionResultContainer<ServiseExecutionStatus, PostResponse | null>> {
+    public async GetPostById(id: string, token?: Token): Promise<ExecutionResultContainer<ServiseExecutionStatus, PostResponse | null>> {
         let foundObjectsOperation = await this._db.GetOneById(this.postsTable, id) as PostServiceDto;
+        let post = foundObjectsOperation.executionResultObject;
 
         if (foundObjectsOperation.executionStatus === ExecutionResult.Failed) {
             return new ExecutionResultContainer(ServiseExecutionStatus.DataBaseFailed);
         }
 
-        if (!foundObjectsOperation.executionResultObject)
+        if (!post)
             return new ExecutionResultContainer(ServiseExecutionStatus.NotFound);
 
-        return new ExecutionResultContainer(ServiseExecutionStatus.Success, foundObjectsOperation.executionResultObject);
+            if(token){
+                let getTokenData = await tokenHandler.GetTokenLoad(token);
+                let tokenData = getTokenData.result;
+
+                if(getTokenData.tokenStatus === TokenStatus.Accepted && tokenData){
+                    let likeStatistic = await likeService.GetExtendedLikeStatistic(id, tokenData.id);
+                    post.extendedLikesInfo = likeStatistic;
+                }
+                
+            }
+
+        return new ExecutionResultContainer(ServiseExecutionStatus.Success, post);
     }
     public async SavePost(post: PostRequest, request: Request<{}, {}, {}, {}>): Promise<ExecutionResultContainer<ServiseExecutionStatus, PostResponse | null>> {
         let searchBlog = await blogService.GetBlogById(post.blogId);
@@ -166,10 +180,9 @@ class PostService {
 
             if ((getTokenData.tokenStatus === TokenStatus.Accepted) && tokenData) {
                 let markedComments = await Promise.all(comments.map(async (comment) => {
-                    let getLikeStatus = await likeService.GetUserLikeStatus(tokenData!.id, comment.id);
+                    let commentStatistic = await likeService.GetLikeStatistic(comment.id, tokenData!.id);
 
-                    if (getLikeStatus.executionStatus === ServicesWithUsersExecutionResult.Success && getLikeStatus.executionResultObject)
-                        comment.likesInfo.myStatus = getLikeStatus.executionResultObject.status;
+                    comment.likesInfo = commentStatistic;
 
                     return comment;
                 }))

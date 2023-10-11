@@ -2,6 +2,7 @@ import mongoose, { HydratedDocument } from "mongoose";
 import { LikeDataBase, likeSchema } from "../Entities/LikeDataBase";
 import { mongooseRepo } from "../../../Common/Mongoose/MongooseRepo";
 import { ExecutionResult, ExecutionResultContainer } from "../../../Common/Database/DataBase";
+import { AvailableLikeStatus } from "../Entities/LikeRequest";
 
 export type LikeRepoType = (
     mongoose.Document<unknown, {}, LikeDataBase>
@@ -48,7 +49,9 @@ export class LikeRepo {
 
         return values;
     }
-
+    public async Count(targetId: string, status: AvailableLikeStatus){
+        return await this.likeModel.count({targetId: targetId, status: status}) || 0;
+    }
 
     public GetEntity = (like: LikeDataBase): LikeRepoType => new this.likeModel(like) as LikeRepoType;
 }

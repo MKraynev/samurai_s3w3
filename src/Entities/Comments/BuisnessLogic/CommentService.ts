@@ -40,28 +40,14 @@ class CommentService {
             let getTokenData = await tokenHandler.GetTokenLoad(userToken);
             let tokenData = getTokenData.result;
 
-            if (getTokenData.tokenStatus === TokenStatus.Accepted && tokenData) {
-                let getLikeStatus = await likeService.GetUserLikeStatus(tokenData.id, foundComment.id);
-
-                if (getLikeStatus.executionStatus === ServicesWithUsersExecutionResult.Success && getLikeStatus.executionResultObject) {
-                    foundComment.likesInfo.myStatus = getLikeStatus.executionResultObject.status;
-                }
-
+            if (tokenData) {
+                let likeStatistic = await likeService.GetLikeStatistic(id, tokenData.id);
+                foundComment.likesInfo = likeStatistic;
             }
+
         }
 
-        let getLastLikes = await likeService.GetLastLikes(foundComment.id);
-        if (getLastLikes.executionStatus === ServicesWithUsersExecutionResult.Success && getLastLikes.executionResultObject) {
-            foundComment.likesInfo.newestLikes = getLastLikes.executionResultObject.map(likeResponse => {
-                let like: NewestLike = {
-                    addedAt: likeResponse.createdAt,
-                    userId: likeResponse.userId,
-                    login: likeResponse.userLogin
-                }
 
-                return like;
-            });
-        }
 
         return new ExecutionResultContainer(ServicesWithUsersExecutionResult.Success, foundComment);
     }
@@ -120,65 +106,65 @@ class CommentService {
         return new ExecutionResultContainer(ServicesWithUsersExecutionResult.Success, updateComment.executionResultObject);
     }
 
-    public async AddLikeData(newLikeData: LikeRequest, previousLikeData: LikeDataBase | null) {
-        let commentId = newLikeData.targetId;
-        let findComment = await this.GetCommentById(commentId);
+    // public async AddLikeData(newLikeData: LikeRequest, previousLikeData: LikeDataBase | null) {
+    //     let commentId = newLikeData.targetId;
+    //     let findComment = await this.GetCommentById(commentId);
 
-        if (findComment.executionStatus !== ServicesWithUsersExecutionResult.Success || !findComment.executionResultObject) {
-            return;
-        }
+    //     if (findComment.executionStatus !== ServicesWithUsersExecutionResult.Success || !findComment.executionResultObject) {
+    //         return;
+    //     }
 
-        let previousStatus: AvailableLikeStatus = previousLikeData?.status || "None";
-        let newStatus: AvailableLikeStatus = newLikeData.status;
+    //     let previousStatus: AvailableLikeStatus = previousLikeData?.status || "None";
+    //     let newStatus: AvailableLikeStatus = newLikeData.status;
 
 
-        //step 1
-        switch (`${previousStatus}->${newStatus}`) {
-            case "Like->None":
-            case "Like->Dislike":
-                this.SubLike(commentId);
-                break;
+    //     //step 1
+    //     switch (`${previousStatus}->${newStatus}`) {
+    //         case "Like->None":
+    //         case "Like->Dislike":
+    //             this.SubLike(commentId);
+    //             break;
 
-            case "Dislike->None":
-            case "Dislike->Like":
-                this.SubDislike(commentId)
-                break;
+    //         case "Dislike->None":
+    //         case "Dislike->Like":
+    //             this.SubDislike(commentId)
+    //             break;
 
-            case "Dislike->Dislike":
-            case "Like->Like":
-            case "None->None":
-                return;
-                break;
-        }
+    //         case "Dislike->Dislike":
+    //         case "Like->Like":
+    //         case "None->None":
+    //             return;
+    //             break;
+    //     }
 
-        //step 2
-        switch (newStatus) {
-            case "Like":
-                this.AddLike(commentId);
-                break;
+    //     //step 2
+    //     switch (newStatus) {
+    //         case "Like":
+    //             this.AddLike(commentId);
+    //             break;
 
-            case "Dislike":
-                this.AddDislike(commentId);
-                break;
-        }
-    }
+    //         case "Dislike":
+    //             this.AddDislike(commentId);
+    //             break;
+    //     }
+    // }
 
-    private async AddLike(commentId: string) {
-        let add = await this._db.IncrementProperty(this.commentTable, commentId, "likesInfo.likesCount", 1);
-        return add.executionResultObject;
-    }
-    private async SubLike(commentId: string) {
-        let sub = await this._db.IncrementProperty(this.commentTable, commentId, "likesInfo.likesCount", -1);
-        return sub.executionResultObject;
-    }
-    private async AddDislike(commentId: string) {
-        let add = await this._db.IncrementProperty(this.commentTable, commentId, "likesInfo.dislikesCount", 1);
-        return add.executionResultObject;
-    }
-    private async SubDislike(commentId: string) {
-        let sub = await this._db.IncrementProperty(this.commentTable, commentId, "likesInfo.dislikesCount", -1);
-        return sub.executionResultObject;
-    }
+    // private async AddLike(commentId: string) {
+    //     let add = await this._db.IncrementProperty(this.commentTable, commentId, "likesInfo.likesCount", 1);
+    //     return add.executionResultObject;
+    // }
+    // private async SubLike(commentId: string) {
+    //     let sub = await this._db.IncrementProperty(this.commentTable, commentId, "likesInfo.likesCount", -1);
+    //     return sub.executionResultObject;
+    // }
+    // private async AddDislike(commentId: string) {
+    //     let add = await this._db.IncrementProperty(this.commentTable, commentId, "likesInfo.dislikesCount", 1);
+    //     return add.executionResultObject;
+    // }
+    // private async SubDislike(commentId: string) {
+    //     let sub = await this._db.IncrementProperty(this.commentTable, commentId, "likesInfo.dislikesCount", -1);
+    //     return sub.executionResultObject;
+    // }
 }
 
 export const commentService = new CommentService(mongoDb);

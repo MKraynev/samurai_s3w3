@@ -6,9 +6,13 @@ import { CompleteRequest, RequestWithBody, RequestWithParams } from "../../../Co
 import { ValidPostFields } from "./Middleware/PostMiddleware";
 import { CheckFormatErrors } from "../../../Common/Request/RequestValidation/RequestValidation";
 import { PostRequest } from "../Entities/PostForRequest";
-import { ParseAccessToken } from "../../Users/Common/Router/Middleware/AuthMeddleware";
+import { AccessIsAllowed, ParseAccessToken } from "../../Users/Common/Router/Middleware/AuthMeddleware";
 import { ValidCommentFields } from "../../Comments/Router/Middleware/CommentMiddleware";
 import { CommentRequest } from "../../Comments/Entities/CommentRequest";
+import { ValidLikeFields } from "../../Likes/TestRouter/Middleware/LikeMiddleware";
+import { AvailableLikeStatus, LikeRequest } from "../../Likes/Entities/LikeRequest";
+import { likeService } from "../../Likes/BuisnessLogic/LikeService";
+import { ServicesWithUsersExecutionResult } from "../../Comments/BuisnessLogic/CommentService";
 
 export const postRouter = Router();
 
@@ -29,10 +33,6 @@ postRouter.get("",
                 response.status(200).send(search.executionResultObject);
                 break;
         }
-        // let foundValues = await dataManager.postRepo.TakeAll(searchParams, pageHandler);
-        // let returnValues = foundValues || [];
-
-        // response.status(200).send(returnValues)
     })
 
 postRouter.get("/:id",
@@ -54,15 +54,6 @@ postRouter.get("/:id",
                 response.status(200).send(search.executionResultObject);
                 break;
         }
-
-        // let foundValue = await dataManager.postRepo.TakeCertain(reqId);
-        // if (foundValue) {
-        //     response.status(200).send(foundValue);
-        // }
-        // else {
-        //     response.sendStatus(404);
-        // }
-
     })
 
 postRouter.post("",
@@ -86,20 +77,6 @@ postRouter.post("",
                 response.status(201).send(save.executionResultObject);
                 break;
         }
-
-        // let existedBlog = await dataManager.blogRepo.TakeCertain(request.body.blogId);
-        // if (existedBlog) {
-        //     let reqObj = new PostRequest(
-        //         request.body.title, request.body.shortDescription, request.body.content, request.body.blogId, existedBlog.name);
-        //     //Blog exist
-        //     let savedPost = await dataManager.postRepo.Save(reqObj);
-        //     if (savedPost) {
-        //         response.status(201).send(savedPost);
-        //         return;
-        //     }
-        // }
-        // response.sendStatus(404);
-
     })
 
 postRouter.put("/:id",
@@ -121,20 +98,6 @@ postRouter.put("/:id",
                 response.sendStatus(204);
                 break;
         }
-        // let existedBlog = await dataManager.blogRepo.TakeCertain(requestedBlogId);
-        // let requestedPost = await dataManager.postRepo.TakeCertain(requestedPostId);
-        // if (existedBlog && requestedPost) {
-        //     let reqData: PostRequest = new PostRequest(
-        //         request.body.title, request.body.shortDescription, request.body.content, request.body.blogId, existedBlog.name)
-
-        //     let updateResultIsPositive = await dataManager.postRepo.Update(requestedPostId, reqData);
-
-        //     if (updateResultIsPositive) {
-        //         response.sendStatus(204);
-        //         return;
-        //     }
-        // }
-        // response.sendStatus(404);
     })
 
 postRouter.delete("/:id",
@@ -160,16 +123,6 @@ postRouter.delete("/:id",
                 response.sendStatus(404);
                 break;
         }
-
-        // let postDeleted = await dataManager.postRepo.DeleteCertain(idVal);
-
-        // if (postDeleted) {
-        //     response.sendStatus(204);
-        // }
-        // else {
-        //     response.sendStatus(404);
-        // }
-        // return;
     })
 
 postRouter.get("/:id/comments",
@@ -196,13 +149,6 @@ postRouter.get("/:id/comments",
                 response.sendStatus(404);
                 break;
         }
-        // let foundValues = await dataManager.commentRepo.TakeAll(searchParams, pageHandler);
-        // if (foundValues) {
-        //     response.status(200).send(foundValues);
-        //     return;
-        // }
-        // response.sendStatus(404);
-        // return;
     })
 
 postRouter.post("/:id/comments",
@@ -237,17 +183,33 @@ postRouter.post("/:id/comments",
                 response.sendStatus(400);
                 break;
         }
-        // let user: UserResponse  = request.user;
+    })
 
-        // let comment = new CommentRequest(request.body.content);
-        // let commentToDb = new CommentRequestForDB(comment, request.params.id, user.id, user.login);
+    postRouter.put("/:id/like-status",
+    ParseAccessToken,
+    AccessIsAllowed,
+    ValidLikeFields,
+    CheckFormatErrors,
+    async (request: CompleteRequest<{ id: string }, { likeStatus: AvailableLikeStatus }, {}>, response: Response) => {
+        let commentId = request.params.id;
+        let likeStatus = request.body.likeStatus;
+        let token = request.accessToken;
 
-        // let savedComment = await dataManager.commentRepo.Save(commentToDb);
+        let likeData = new LikeRequest(commentId, likeStatus);
 
-        // if (savedComment) {
-        //     response.status(201).send(savedComment);
-        //     return;
-        // }
-        // response.sendStatus(400);
-        // return;
+        let setLike = await likeService.SetLikeData(token, likeData);
+
+        switch (setLike.executionStatus) {
+            case ServicesWithUsersExecutionResult.Success:
+                response.sendStatus(204);
+                break;
+
+            case ServicesWithUsersExecutionResult.Unauthorized:
+                response.sendStatus(401);
+                break;
+
+            default:
+                response.sendStatus(404);
+                break;
+        }
     })

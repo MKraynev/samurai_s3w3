@@ -1,5 +1,5 @@
 import { CommentRequest } from "./CommentRequest";
-import { LikeStatistic } from "../../Likes/Entities/LikeStatistic";
+import { ExtendedLikeStatistic, LikeStatistic } from "../../Likes/Entities/LikeStatistic";
 
 export type CommentatorInfo = {
     userId: string,
@@ -12,8 +12,7 @@ export class CommentDataBase extends CommentRequest{
     public likesInfo: LikeStatistic = {
         likesCount: 0,
         dislikesCount: 0,
-        myStatus: "None",
-        newestLikes: []
+        myStatus: "None"
     }
     
     constructor(
