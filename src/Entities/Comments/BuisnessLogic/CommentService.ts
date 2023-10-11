@@ -7,6 +7,7 @@ import { AvailableLikeStatus, LikeRequest, LikeStatus } from "../../Likes/Entiti
 import { LikeDataBase } from "../../Likes/Entities/LikeDataBase";
 import { TokenStatus, tokenHandler } from "../../../Common/Authentication/User/TokenAuthentication";
 import { likeService } from "../../Likes/BuisnessLogic/LikeService";
+import { NewestLike } from "../../Likes/Entities/LikeStatistic";
 
 type CommentServiceDto = ExecutionResultContainer<ExecutionResult, CommentResponse>;
 
@@ -42,10 +43,26 @@ class CommentService {
             if (getTokenData.tokenStatus === TokenStatus.Accepted && tokenData) {
                 let getLikeStatus = await likeService.GetUserLikeStatus(tokenData.id, foundComment.id);
 
-                if (getLikeStatus.executionStatus === ServicesWithUsersExecutionResult.Success && getLikeStatus.executionResultObject)
+                if (getLikeStatus.executionStatus === ServicesWithUsersExecutionResult.Success && getLikeStatus.executionResultObject) {
                     foundComment.likesInfo.myStatus = getLikeStatus.executionResultObject.status;
+                }
+
             }
         }
+
+        let getLastLikes = await likeService.GetLastLikes(foundComment.id);
+        if (getLastLikes.executionStatus === ServicesWithUsersExecutionResult.Success && getLastLikes.executionResultObject) {
+            foundComment.likesInfo.newestLikes = getLastLikes.executionResultObject.map(likeResponse => {
+                let like: NewestLike = {
+                    addedAt: likeResponse.createdAt,
+                    userId: likeResponse.userId,
+                    login: likeResponse.userLogin
+                }
+
+                return like;
+            });
+        }
+
         return new ExecutionResultContainer(ServicesWithUsersExecutionResult.Success, foundComment);
     }
     public async DeleteComment(id: string, userToken: Token): Promise<ExecutionResultContainer<ServicesWithUsersExecutionResult, boolean | null>> {

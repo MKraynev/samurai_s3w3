@@ -11,7 +11,6 @@ export enum LikeStatus{
 
 export class LikeRequest{
     constructor(
-        public target: AvailableLikeTarget,
         public targetId: string,
         public status: AvailableLikeStatus
     ) {}

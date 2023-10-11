@@ -81,7 +81,7 @@ describe("Posts test", () => {
             .send(PostRequestData)
             .set(_authorization);
 
-        console.log(PostRequestData);
+        
 
         expect(response.body).toEqual(postCompleteStructure);
 

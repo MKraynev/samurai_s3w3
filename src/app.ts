@@ -11,7 +11,7 @@ import { mongoDb } from "./Common/Database/MongoDb";
 import { authRouter } from "./Entities/Users/Common/Router/AuthRouter";
 import { deviceRouter } from "./Entities/Devices/Router/DeviceRouter";
 import { mongooseRepo } from "./Common/Mongoose/MongooseRepo";
-import { likeRouter } from "./Entities/Likes/TestRouter/LikeRouter";
+// import { likeRouter } from "./Entities/Likes/TestRouter/LikeRouter";
 
 
 var useragent = require('express-useragent');
@@ -39,7 +39,7 @@ app.use(usersPath, userRouter);
 app.use(authPath, authRouter);
 app.use(devicesPath, deviceRouter);
 app.use(commentPath, commentRouter);
-// app.use(likeTestPath, likeRouter);
+//app.use(likeTestPath, likeRouter);
 
 app.use(TestClearAllPath, _NewTestClearAllRouter)
 

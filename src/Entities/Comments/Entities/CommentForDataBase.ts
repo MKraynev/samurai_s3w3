@@ -12,7 +12,8 @@ export class CommentDataBase extends CommentRequest{
     public likesInfo: LikeStatistic = {
         likesCount: 0,
         dislikesCount: 0,
-        myStatus: "None"
+        myStatus: "None",
+        newestLikes: []
     }
     
     constructor(

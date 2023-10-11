@@ -126,7 +126,7 @@ commentRouter.put("/:id/like-status",
         let likeStatus = request.body.likeStatus;
         let token = request.accessToken;
 
-        let likeData = new LikeRequest("comments", commentId, likeStatus);
+        let likeData = new LikeRequest(commentId, likeStatus);
 
         let setLike = await likeService.SetLikeData(token, likeData);
 

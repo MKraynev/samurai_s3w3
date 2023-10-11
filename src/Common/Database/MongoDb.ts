@@ -426,7 +426,6 @@ export class MongoDb extends DataBase<AvailableInputDbTypes, AvailableUpdateType
                     searcherObj = {
                         "_id": { $ne: new ObjectId(sorter.exceptCurrentId) }
                     }
-                    console.log(searcherObj);
                 }
                 else {
                     searcherObj = {

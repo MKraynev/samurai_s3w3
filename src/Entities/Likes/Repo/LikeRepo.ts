@@ -1,9 +1,13 @@
 import mongoose, { HydratedDocument } from "mongoose";
 import { LikeDataBase, likeSchema } from "../Entities/LikeDataBase";
 import { mongooseRepo } from "../../../Common/Mongoose/MongooseRepo";
-import { LikeRequest } from "../Entities/LikeRequest";
 import { ExecutionResult, ExecutionResultContainer } from "../../../Common/Database/DataBase";
 
+export type LikeRepoType = (
+    mongoose.Document<unknown, {}, LikeDataBase>
+    & LikeDataBase
+    & { _id: mongoose.Types.ObjectId; }
+    & { createdAt: string, updatedAt: string })
 
 export class LikeRepo {
     constructor(private likeModel: mongoose.Model<LikeDataBase>) { }
@@ -13,11 +17,11 @@ export class LikeRepo {
     }
 
     public async GetCurrentLikeStatus(userId: string, targetId: string)
-        : Promise<ExecutionResultContainer<ExecutionResult, (mongoose.Document<unknown, {}, LikeDataBase> & LikeDataBase & { _id: mongoose.Types.ObjectId; }) | null>> {
+        : Promise<ExecutionResultContainer<ExecutionResult, LikeRepoType | null>> {
         try {
             //Возвращает [] при отсутствии документа при find()
             //findOne() -> null
-            let foundLike = await this.likeModel.findOne({targetId: targetId, userId: userId });
+            let foundLike = await this.likeModel.findOne({ targetId: targetId, userId: userId }) as LikeRepoType;
 
             return new ExecutionResultContainer(ExecutionResult.Pass, foundLike);
         }
@@ -27,18 +31,26 @@ export class LikeRepo {
 
     }
 
-    public async Save(like: HydratedDocument<LikeDataBase>): Promise<HydratedDocument<LikeDataBase>> {
-        return await like.save();
+    public async Save(like: HydratedDocument<LikeDataBase>): Promise<LikeRepoType> {
+        return await like.save() as LikeRepoType;
     }
 
     public async DeleteAll() {
         await this.likeModel.deleteMany();
     }
-    public async Get() {
-        return this.likeModel.find({});
+    public async GetLast(targetId: string, limit: number = 3) {
+        let values = await this.likeModel.find({ targetId: targetId }).limit(limit) as LikeRepoType[]
+
+
+        if (values) {
+            values.sort((l1, l2) => new Date(l1.createdAt).getMilliseconds() - new Date(l2.createdAt).getMilliseconds()).reverse();
+        }
+
+        return values;
     }
 
-    public GetEntity = (like: LikeDataBase): HydratedDocument<LikeDataBase> => new this.likeModel(like);
+
+    public GetEntity = (like: LikeDataBase): LikeRepoType => new this.likeModel(like) as LikeRepoType;
 }
 
 export const likeRepo = new LikeRepo(mongooseRepo.GetModel("Like", likeSchema))
