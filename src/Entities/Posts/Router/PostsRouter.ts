@@ -36,10 +36,11 @@ postRouter.get("",
     })
 
 postRouter.get("/:id",
+ParseAccessToken,
     async (request: RequestWithParams<{ id: string }>, response: Response) => {
         let reqId = request.params.id;
 
-        let search = await postService.GetPostById(request.params.id);
+        let search = await postService.GetPostById(request.params.id, request.accessToken);
         switch (search.executionStatus) {
             case ServiseExecutionStatus.DataBaseFailed:
             case ServiseExecutionStatus.Unauthorized:

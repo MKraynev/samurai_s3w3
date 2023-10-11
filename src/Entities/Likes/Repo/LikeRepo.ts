@@ -39,8 +39,8 @@ export class LikeRepo {
     public async DeleteAll() {
         await this.likeModel.deleteMany();
     }
-    public async GetLast(targetId: string, limit: number = 3) {
-        let values = await this.likeModel.find({ targetId: targetId }).limit(limit) as LikeRepoType[]
+    public async GetLast(targetId: string, status: AvailableLikeStatus, limit: number = 3) {
+        let values = await this.likeModel.find({ targetId: targetId, status: status }).limit(limit) as LikeRepoType[]
 
 
         if (values) {
@@ -49,8 +49,8 @@ export class LikeRepo {
 
         return values;
     }
-    public async Count(targetId: string, status: AvailableLikeStatus){
-        return await this.likeModel.count({targetId: targetId, status: status}) || 0;
+    public async Count(targetId: string, status: AvailableLikeStatus) {
+        return await this.likeModel.count({ targetId: targetId, status: status }) || 0;
     }
 
     public GetEntity = (like: LikeDataBase): LikeRepoType => new this.likeModel(like) as LikeRepoType;

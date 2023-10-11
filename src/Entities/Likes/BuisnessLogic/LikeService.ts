@@ -77,25 +77,25 @@ class LikeService {
     }
 
     private async GetLastLikes(targetId: string, count: number = 3): Promise<ExecutionResultContainer<ServicesWithUsersExecutionResult, LikeResponse[]>> {
-        let likes = await this.likeRepo.GetLast(targetId, count);
+        let likes = await this.likeRepo.GetLast(targetId, "Like", count);
 
         return new ExecutionResultContainer(ServicesWithUsersExecutionResult.Success, likes.map(likeMongooseDto => likeMongooseDto.toObject()));
     }
-    public async GetLikeStatistic(targetId: string, userId: string): Promise<LikeStatistic> {
+    public async GetLikeStatistic(targetId: string, userId?: string): Promise<LikeStatistic> {
         let countLikes = await this.likeRepo.Count(targetId, "Like");
         let countDislikes = await this.likeRepo.Count(targetId, "Dislike");
-        let userStatus = await this.GetUserLikeStatus(userId, targetId);
+        let userStatus =  userId? (await this.GetUserLikeStatus(userId, targetId)).executionResultObject?.status || "None" : "None";
 
         let result: LikeStatistic = {
             likesCount: countLikes,
             dislikesCount: countDislikes,
-            myStatus: userStatus.executionResultObject?.status || "None"
+            myStatus: userStatus
         }
 
         return result;
     }
 
-    public async GetExtendedLikeStatistic(targetId: string, userId: string): Promise<ExtendedLikeStatistic> {
+    public async GetExtendedLikeStatistic(targetId: string, userId?: string): Promise<ExtendedLikeStatistic> {
         let getStatistic = await this.GetLikeStatistic(targetId, userId);
         let getLastLikes = await this.GetLastLikes(targetId, 3);
         let newestLikes: NewestLike[] = getLastLikes.executionResultObject?.map(likeResponse => {

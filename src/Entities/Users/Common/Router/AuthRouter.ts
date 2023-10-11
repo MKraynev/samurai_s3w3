@@ -69,7 +69,6 @@ authRouter.get("/me",
     })
 
 authRouter.post("/refresh-token",
-    RequestIsAllowed,
     ParseRefreshToken,
     async (request: Request, response: Response) => {
         let token: Token = request.refreshToken;
@@ -186,7 +185,6 @@ authRouter.post("/registration-confirmation",
     })
 
 authRouter.post("/logout",
-    RequestIsAllowed,
     ParseRefreshToken,
     async (request: Request, response: Response) => {
         let token: Token = request.refreshToken;
