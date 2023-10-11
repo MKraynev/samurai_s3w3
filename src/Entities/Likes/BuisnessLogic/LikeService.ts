@@ -47,13 +47,6 @@ class LikeService {
             return new ExecutionResultContainer(ServicesWithUsersExecutionResult.Unauthorized);
         }
 
-        // let findTarget = await this.FindTarget(likeData.target, likeData.targetId);
-        // let targetData = findTarget.executionResultObject;
-
-        // if (findTarget.executionStatus !== ServicesWithUsersExecutionResult.Success || !targetData) {
-        //     return new ExecutionResultContainer(ServicesWithUsersExecutionResult.NotFound);
-        // }
-
         let findLike = await this.likeRepo.GetCurrentLikeStatus(userId, likeData.targetId);
         let previousLikeData = findLike.executionResultObject;
 

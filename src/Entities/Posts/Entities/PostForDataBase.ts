@@ -5,11 +5,12 @@ export class PostDataBase extends PostRequest {
     public extendedLikesInfo: ExtendedLikeStatistic = {
         likesCount: 0,
         dislikesCount: 0,
-        myStatus: "Like",
+        myStatus: "None",
         newestLikes: []
     };
 
     constructor(
+        public blogName: string,
         post: PostRequest,
         public createdAt: string = (new Date()).toISOString()
     ) {

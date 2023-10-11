@@ -135,7 +135,7 @@ class BlogServise {
 
         // let blog = findBlog.executionResultObject;
 
-        let postForSave = new PostDataBase(post);
+        let postForSave = new PostDataBase(findBlog.executionResultObject.name, post);
         let savePost = await this._db.SetOne(this.postsTable, postForSave) as ExecutionResultContainer<ExecutionResult, PostResponse>;
 
         if (savePost.executionStatus !== ExecutionResult.Pass || !savePost.executionResultObject)

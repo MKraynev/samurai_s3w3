@@ -72,7 +72,7 @@ class PostService {
 
         return new ExecutionResultContainer(ServiseExecutionStatus.Success, post);
     }
-    public async SavePost(post: PostRequest, request: Request<{}, {}, {}, {}>): Promise<ExecutionResultContainer<ServiseExecutionStatus, PostResponse | null>> {
+    public async SavePost( post: PostRequest, blogName: string, request: Request<{}, {}, {}, {}>): Promise<ExecutionResultContainer<ServiseExecutionStatus, PostResponse | null>> {
         let searchBlog = await blogService.GetBlogById(post.blogId);
         if (searchBlog.executionStatus !== ServiseExecutionStatus.Success || !searchBlog.executionResultObject) {
             return new ExecutionResultContainer(ServiseExecutionStatus.NotFound);
@@ -83,7 +83,7 @@ class PostService {
         if (accessVerdict !== AuthenticationResult.Accept)
             return new ExecutionResultContainer(ServiseExecutionStatus.Unauthorized);
 
-        let postForSave = new PostDataBase(post);
+        let postForSave = new PostDataBase(blogName, post);
         postForSave.blogName = searchBlog.executionResultObject.name;
         let saveOperation = await this._db.SetOne(this.postsTable, postForSave) as PostServiceDto;
 

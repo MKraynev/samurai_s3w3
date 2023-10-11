@@ -62,7 +62,7 @@ postRouter.post("",
     async (request: RequestWithBody<PostRequest>, response: Response) => {
         let reqObj = new PostRequest(request.body.title, request.body.shortDescription, request.body.content, request.body.blogId);
 
-        let save = await postService.SavePost(reqObj, request);
+        let save = await postService.SavePost(reqObj, "", request);
 
         switch (save.executionStatus) {
             case ServiseExecutionStatus.DataBaseFailed:
@@ -191,11 +191,17 @@ postRouter.post("/:id/comments",
     ValidLikeFields,
     CheckFormatErrors,
     async (request: CompleteRequest<{ id: string }, { likeStatus: AvailableLikeStatus }, {}>, response: Response) => {
-        let commentId = request.params.id;
+        let postId = request.params.id;
+        let findPost = await postService.GetPostById(postId);
+
+        if(findPost.executionStatus !== ServiseExecutionStatus.Success || !findPost.executionResultObject){
+            response.sendStatus(404);
+            return;
+        }
+
         let likeStatus = request.body.likeStatus;
         let token = request.accessToken;
-
-        let likeData = new LikeRequest(commentId, likeStatus);
+        let likeData = new LikeRequest(postId, likeStatus);
 
         let setLike = await likeService.SetLikeData(token, likeData);
 

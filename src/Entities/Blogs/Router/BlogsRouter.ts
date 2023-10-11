@@ -54,9 +54,6 @@ blogRouter.get("/:id/posts",
     async (request: RequestWithParams<{ id: string }>, response: Response) => {
         let blogId = request.params.id;
 
-        // let existedBlog = await dataManager.blogRepo.TakeCertain(reqId);
-        // if (existedBlog) {
-        //Для запроса создаем объект PostSorter
         let searchParams = RequestParser.ReadQueryPostSorter(request) as PostSorter;
         let pageHandler = RequestParser.ReadQueryPageHandle(request);
 
@@ -101,13 +98,6 @@ blogRouter.post("",
                 response.status(201).send(save.executionResultObject);
                 break;
         }
-        // let savedBlog = await dataManager.blogRepo.Save(reqObj);
-        // if (savedBlog) {
-        //     response.status(201).send(savedBlog);
-        // }
-        // else {
-        //     response.sendStatus(400);
-        // }
     })
 
 blogRouter.post("/:id/posts",
