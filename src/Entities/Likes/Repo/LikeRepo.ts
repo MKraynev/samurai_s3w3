@@ -40,17 +40,17 @@ export class LikeRepo {
         await this.likeModel.deleteMany();
     }
     public async GetLast(targetId: string, status: AvailableLikeStatus, limit: number = 3) {
-        let values = await this.likeModel.find({ targetId: targetId, status: status }).limit(limit) as LikeRepoType[]
+        let values = await this.likeModel.find({ targetId: targetId, status: status }).sort({"createdAt": "desc"}).limit(limit) as LikeRepoType[]
 
 
-        if (values) {
-            values.sort((l1, l2) => new Date(l1.createdAt).getMilliseconds() - new Date(l2.createdAt).getMilliseconds()).reverse();
-        }
+        // if (values) {
+        //     values.sort((l1, l2) => new Date(l1.createdAt).getMilliseconds() - new Date(l2.createdAt).getMilliseconds()).reverse();
+        // }
 
         return values;
     }
     public async Count(targetId: string, status: AvailableLikeStatus) {
-        return await this.likeModel.count({ targetId: targetId, status: status }) || 0;
+        return await this.likeModel.countDocuments({ targetId: targetId, status: status }) || 0;
     }
 
     public GetEntity = (like: LikeDataBase): LikeRepoType => new this.likeModel(like) as LikeRepoType;
