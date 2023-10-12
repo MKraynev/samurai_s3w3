@@ -28,7 +28,7 @@ class PostService {
 
     constructor(private _db: MongoDb, private _authenticator: IAuthenticator) { }
 
-    public async GetPosts(searchConfig: PostSorter, paginator: Paginator): Promise<ExecutionResultContainer<ServiseExecutionStatus, Page<PostResponse[]> | null>> {
+    public async GetPosts(searchConfig: PostSorter, paginator: Paginator, token?: Token): Promise<ExecutionResultContainer<ServiseExecutionStatus, Page<PostResponse[]> | null>> {
 
         let countOperation = await this._db.Count(this.postsTable, searchConfig);
 
@@ -37,14 +37,22 @@ class PostService {
 
         let neededSkipObjectsNumber = paginator.GetAvailableSkip(countOperation.executionResultObject);
         let foundObjectsOperation = await this._db.GetMany(this.postsTable, searchConfig, neededSkipObjectsNumber, paginator.pageSize) as PostServiceDtos;
+        let posts = foundObjectsOperation.executionResultObject;
 
-        if (foundObjectsOperation.executionStatus === ExecutionResult.Failed || !foundObjectsOperation.executionResultObject)
+        if (foundObjectsOperation.executionStatus === ExecutionResult.Failed || !posts)
             return new ExecutionResultContainer(ServiseExecutionStatus.DataBaseFailed);
 
-        let pagedObjects = paginator.GetPaged<PostResponse[]>(foundObjectsOperation.executionResultObject);
+        let tokenData = token ? (await tokenHandler.GetTokenLoad(token)).result : undefined;
+
+        let postsWithLikeData = await Promise.all(posts.map( async (post) => {
+            let likeStatistic = await likeService.GetExtendedLikeStatistic(post.id, tokenData?.id);
+            post.extendedLikesInfo = likeStatistic;
+
+            return post;
+        }))
+
+        let pagedObjects = paginator.GetPaged<PostResponse[]>(postsWithLikeData);
         let operationResult = new ExecutionResultContainer(ServiseExecutionStatus.Success, pagedObjects)
-
-
 
         return operationResult;
     }
@@ -59,20 +67,14 @@ class PostService {
         if (!post)
             return new ExecutionResultContainer(ServiseExecutionStatus.NotFound);
 
-            if(token){
-                let getTokenData = await tokenHandler.GetTokenLoad(token);
-                let tokenData = getTokenData.result;
+        let tokenData = token ? (await tokenHandler.GetTokenLoad(token)).result : undefined;
+        let likeStatistic = await likeService.GetExtendedLikeStatistic(id, tokenData?.id);
 
-                if(getTokenData.tokenStatus === TokenStatus.Accepted && tokenData){
-                    let likeStatistic = await likeService.GetExtendedLikeStatistic(id, tokenData.id);
-                    post.extendedLikesInfo = likeStatistic;
-                }
-                
-            }
+        post.extendedLikesInfo = likeStatistic;
 
         return new ExecutionResultContainer(ServiseExecutionStatus.Success, post);
     }
-    public async SavePost( post: PostRequest, blogName: string, request: Request<{}, {}, {}, {}>): Promise<ExecutionResultContainer<ServiseExecutionStatus, PostResponse | null>> {
+    public async SavePost(post: PostRequest, blogName: string, request: Request<{}, {}, {}, {}>): Promise<ExecutionResultContainer<ServiseExecutionStatus, PostResponse | null>> {
         let searchBlog = await blogService.GetBlogById(post.blogId);
         if (searchBlog.executionStatus !== ServiseExecutionStatus.Success || !searchBlog.executionResultObject) {
             return new ExecutionResultContainer(ServiseExecutionStatus.NotFound);

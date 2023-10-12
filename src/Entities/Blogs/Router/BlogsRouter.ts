@@ -8,11 +8,13 @@ import { ServiseExecutionStatus, blogService } from "../BuisnessLogic/BlogServic
 import { PostSorter } from "../../Posts/Repo/PostSorter";
 import { ValidPostFieldsLight } from "../../Posts/Router/Middleware/PostMiddleware";
 import { PostRequest } from "../../Posts/Entities/PostForRequest";
+import { ParseAccessToken } from "../../Users/Common/Router/Middleware/AuthMeddleware";
 
 
 export const blogRouter = Router();
 
 blogRouter.get("",
+ParseAccessToken,
     async (request: Request, response: Response) => {
         let searchParams = RequestParser.ReadQueryBlogSorter(request);
         let pageHandler = RequestParser.ReadQueryPageHandle(request);

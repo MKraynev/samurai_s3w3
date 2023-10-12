@@ -162,7 +162,7 @@ export class AdminUserService {
         let refreshTokenexpireTime = new Date(refreshTokenExpireTime_ms);
 
         let accessTokenExpireTime_ms = activationTime.getTime() + ms(ACCESS_TOKEN_TIME);
-        let accessTokenexpireTime = new Date(accessTokenExpireTime_ms);
+        //let accessTokenexpireTime = new Date(accessTokenExpireTime_ms);
 
 
         let deviceDataToSave = new DeviceDataBase(deviceData, user.id, activationTime.toISOString(), refreshTokenexpireTime.toISOString())

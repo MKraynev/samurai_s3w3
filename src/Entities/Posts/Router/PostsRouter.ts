@@ -17,11 +17,12 @@ import { ServicesWithUsersExecutionResult } from "../../Comments/BuisnessLogic/C
 export const postRouter = Router();
 
 postRouter.get("",
+    ParseAccessToken,
     async (request: Request, response: Response) => {
         let searchParams = RequestParser.ReadQueryPostSorter(request);
         let pageHandler = RequestParser.ReadQueryPageHandle(request);
 
-        let search = await postService.GetPosts(searchParams, pageHandler)
+        let search = await postService.GetPosts(searchParams, pageHandler, request.accessToken)
 
         switch (search.executionStatus) {
             case ServiseExecutionStatus.DataBaseFailed:
@@ -36,7 +37,7 @@ postRouter.get("",
     })
 
 postRouter.get("/:id",
-ParseAccessToken,
+    ParseAccessToken,
     async (request: RequestWithParams<{ id: string }>, response: Response) => {
         let reqId = request.params.id;
 
@@ -186,7 +187,7 @@ postRouter.post("/:id/comments",
         }
     })
 
-    postRouter.put("/:id/like-status",
+postRouter.put("/:id/like-status",
     ParseAccessToken,
     AccessIsAllowed,
     ValidLikeFields,
@@ -195,7 +196,7 @@ postRouter.post("/:id/comments",
         let postId = request.params.id;
         let findPost = await postService.GetPostById(postId);
 
-        if(findPost.executionStatus !== ServiseExecutionStatus.Success || !findPost.executionResultObject){
+        if (findPost.executionStatus !== ServiseExecutionStatus.Success || !findPost.executionResultObject) {
             response.sendStatus(404);
             return;
         }
