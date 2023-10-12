@@ -65,6 +65,6 @@ export const RequestIsAllowed = async (request: Request, response: Response, nex
         next();
         return;
     }
-    return;
+    
     response.sendStatus(429);
 }
