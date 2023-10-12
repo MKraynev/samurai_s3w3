@@ -32,9 +32,12 @@ class PostService {
 
         let countOperation = await this._db.Count(this.postsTable, searchConfig);
 
+
         if (countOperation.executionStatus === ExecutionResult.Failed || countOperation.executionResultObject === null)
             return new ExecutionResultContainer(ServiseExecutionStatus.DataBaseFailed);
 
+        paginator.totalCount = countOperation.executionResultObject;
+        
         let neededSkipObjectsNumber = paginator.GetAvailableSkip(countOperation.executionResultObject);
         let foundObjectsOperation = await this._db.GetMany(this.postsTable, searchConfig, neededSkipObjectsNumber, paginator.pageSize) as PostServiceDtos;
         let posts = foundObjectsOperation.executionResultObject;
@@ -44,7 +47,7 @@ class PostService {
 
         let tokenData = token ? (await tokenHandler.GetTokenLoad(token)).result : undefined;
 
-        let postsWithLikeData = await Promise.all(posts.map( async (post) => {
+        let postsWithLikeData = await Promise.all(posts.map(async (post) => {
             let likeStatistic = await likeService.GetExtendedLikeStatistic(post.id, tokenData?.id);
             post.extendedLikesInfo = likeStatistic;
 
