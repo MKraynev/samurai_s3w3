@@ -66,7 +66,7 @@ const StartApp = async () => {
         console.log("app is running");
     })
 
-    await ngrokConnect();
+    //await ngrokConnect();
 }
 
 StartApp();
