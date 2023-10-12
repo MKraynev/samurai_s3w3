@@ -14,6 +14,7 @@ import { PostSorter } from "../../Posts/Repo/PostSorter";
 import { RequestParser } from "../../../Common/Request/RequestParser/RequestParser";
 import { PostRequest } from "../../Posts/Entities/PostForRequest";
 import { PostDataBase } from "../../Posts/Entities/PostForDataBase";
+import { Token } from "../../Users/Common/Entities/Token";
 
 export enum ServiseExecutionStatus {
     Unauthorized,
@@ -116,15 +117,16 @@ class BlogServise {
 
         return new ExecutionResultContainer(ServiseExecutionStatus.Success, true);
     }
-    public async GetBlogPosts(blogId: string, postSorter: PostSorter, paginator: Paginator): Promise<ExecutionResultContainer<ServiseExecutionStatus, Page<PostResponse[]> | null>> {
+    public async GetBlogPosts(blogId: string, postSorter: PostSorter, paginator: Paginator, token?: Token): Promise<ExecutionResultContainer<ServiseExecutionStatus, Page<PostResponse[]> | null>> {
         let findBlog = await this.GetBlogById(blogId);
+        
         if (findBlog.executionStatus !== ServiseExecutionStatus.Success || !findBlog.executionResultObject)
             return new ExecutionResultContainer(ServiseExecutionStatus.NotFound);
 
         let blog = findBlog.executionResultObject;
         postSorter.searchBlogId = blog.id;
 
-        let postSearch = await postService.GetPosts(postSorter, paginator);
+        let postSearch = await postService.GetPosts(postSorter, paginator, token);
         return postSearch;
 
     }

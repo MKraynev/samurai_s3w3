@@ -53,13 +53,14 @@ blogRouter.get("/:id",
     })
 
 blogRouter.get("/:id/posts",
+ParseAccessToken,
     async (request: RequestWithParams<{ id: string }>, response: Response) => {
         let blogId = request.params.id;
 
         let searchParams = RequestParser.ReadQueryPostSorter(request) as PostSorter;
         let pageHandler = RequestParser.ReadQueryPageHandle(request);
 
-        let findPosts = await blogService.GetBlogPosts(blogId, searchParams, pageHandler);
+        let findPosts = await blogService.GetBlogPosts(blogId, searchParams, pageHandler, request.accessToken);
 
         switch (findPosts.executionStatus) {
             case ServiseExecutionStatus.Success:
