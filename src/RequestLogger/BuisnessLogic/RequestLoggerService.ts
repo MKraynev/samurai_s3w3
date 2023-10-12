@@ -39,33 +39,34 @@ class RequestLoggerService {
     }
 
     public async RequestIsAllowed(data: RequestLogRequest): Promise<boolean> {
-        try {
-            let getLastLogs = await this.GetLogs(data, REQUEST_LIMIT_COUNT);
-            if (getLastLogs.executionStatus !== ServiseExecutionStatus.Success || !getLastLogs.executionResultObject) {
-                return true;
-            }
+        return true;
+        // try {
+        //     let getLastLogs = await this.GetLogs(data, REQUEST_LIMIT_COUNT);
+        //     if (getLastLogs.executionStatus !== ServiseExecutionStatus.Success || !getLastLogs.executionResultObject) {
+        //         return true;
+        //     }
 
-            let logs = getLastLogs.executionResultObject;
-            let logsCount = logs.length;
+        //     let logs = getLastLogs.executionResultObject;
+        //     let logsCount = logs.length;
             
-            let recentRequestTime = logs[0].requestTime;
-            let lastRequestTime: string | undefined = logs?.pop()?.requestTime;
+        //     let recentRequestTime = logs[0].requestTime;
+        //     let lastRequestTime: string | undefined = logs?.pop()?.requestTime;
 
-            if (!lastRequestTime) {
-                return true;
-            }
+        //     if (!lastRequestTime) {
+        //         return true;
+        //     }
 
-            let actualRequestTime = new Date(recentRequestTime);
-            let earlyestRequestTime = new Date(lastRequestTime);
+        //     let actualRequestTime = new Date(recentRequestTime);
+        //     let earlyestRequestTime = new Date(lastRequestTime);
 
-            let diff_ms = actualRequestTime.getTime() - earlyestRequestTime.getTime();
-            let result = (logsCount < REQUEST_LIMIT_COUNT) || ((diff_ms / 1000) > REQUEST_LIMIT_SECONDS)
+        //     let diff_ms = actualRequestTime.getTime() - earlyestRequestTime.getTime();
+        //     let result = (logsCount < REQUEST_LIMIT_COUNT) || ((diff_ms / 1000) > REQUEST_LIMIT_SECONDS)
 
-            return result;
-        }
-        catch {
-            return true;
-        }
+        //     return result;
+        // }
+        // catch {
+        //     return true;
+        // }
     }
     public async SaveRequest(requestData: RequestLogRequest): Promise<boolean> {
         let data = new RequestLogDataBase(requestData);
